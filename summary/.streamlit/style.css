@@ -1,0 +1,64 @@
+/* Modern styling for Streamlit app */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+html, body, [class*="css"] {
+    font-family: 'Inter', sans-serif;
+}
+
+.stSelectbox {
+    margin-bottom: 1rem;
+}
+
+.stSelectbox > div > div {
+    background-color: #ffffff;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    transition: all 0.2s ease;
+}
+
+.stSelectbox > div > div:hover {
+    border-color: #FF4B4B;
+}
+
+.stDateInput > div > div {
+    background-color: #ffffff;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.stTable {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.custom-info-box {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.stProgress > div > div > div {
+    background-color: #FF4B4B;
+}
+
+/* Animation for loading state */
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.loading {
+    animation: pulse 1.5s infinite;
+}
+
+/* Reduce the top margin of the main title */
+h1 {
+    margin-top: -40px !important;  /* Adjust value as needed */
+    font-size: 1.8rem;  /* Optional: Reduce font size */
+}
+
+
+
