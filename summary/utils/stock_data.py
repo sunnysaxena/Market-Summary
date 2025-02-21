@@ -5,6 +5,22 @@ from trade_utils import feature_extraction as fe
 from datetime import datetime, timedelta
 
 
+def check_expiry_day(df, date_column="Date"):
+    """
+    Add a column 'Expiry' to check if the given date is a Thursday (Expiry Day).
+
+    Parameters:
+        df (pd.DataFrame): Input DataFrame with a date column.
+        date_column (str): Name of the column containing dates.
+
+    Returns:
+        pd.DataFrame: DataFrame with an additional 'Expiry' column (True/False).
+    """
+    df[date_column] = pd.to_datetime(df[date_column])  # Ensure date format
+    df["Expiry"] = df[date_column].dt.day_name() == "Thursday"  # Check for Thursday
+    return df
+
+
 def get_stock_data(symbol: str, start_date, end_date) -> pd.DataFrame:
     """
     Fetch stock data from Yahoo Finance
@@ -41,6 +57,9 @@ def get_stock_data(symbol: str, start_date, end_date) -> pd.DataFrame:
         # apply trend classification
         df['Trend'] = df.apply(lambda row: fe.classify_trend_v2(row, df.shift(1).loc[row.name]), axis=1)
 
+        # Apply the function
+        df = check_expiry_day(df)
+
         df = fe.extract_feature(df)
 
         # Renaming columns
@@ -57,10 +76,9 @@ def get_stock_data(symbol: str, start_date, end_date) -> pd.DataFrame:
         }, inplace=True)
 
         # Select and rename columns
-        df = df[['Date', 'Open', 'High', 'Low', 'Close', 'Volume',
+        df = df[['Date', 'Open', 'High', 'Low', 'Close', 'Expiry', 'Volume',
                  'Open High', 'Open Low', 'Open Close',
                  'Open Change', 'MKT Change', 'Trend']]
-
         return df
     except Exception as e:
         raise Exception(f"Error fetching data for {symbol}: {str(e)}")
@@ -73,6 +91,11 @@ def get_stock_info(symbol: str) -> dict:
     try:
         stock = yf.Ticker(symbol)
         info = stock.info
+
+        # expiry_dates = stock.options  # List of expiry dates (strings: YYYY-MM-DD)
+        # expiry_dates = pd.to_datetime(expiry_dates)  # Convert to datetime format
+        # print(expiry_dates)
+
         return {
             'name': info.get('longName', symbol),
             'sector': info.get('sector', 'N/A'),

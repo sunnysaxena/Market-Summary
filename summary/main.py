@@ -1,8 +1,10 @@
 import pandas as pd
 import streamlit as st
+import plotly.graph_objects as go
 from datetime import datetime, timedelta
 from components.loader import show_loader
 from utils.stock_data import get_stock_data, get_stock_info
+from utils.constants import SAMPLE_SYMBOLS, SYMBOLS
 
 # Page configuration
 st.set_page_config(
@@ -24,47 +26,15 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+# Add Stock Image Above "Configuration"
+st.sidebar.image("data/image2.png", use_container_width=True)
+
+# Add Space Between Image and Configuration Title
+st.sidebar.markdown("<br>", unsafe_allow_html=True)  # Two line breaks for spacing
+
 # Sidebar configuration
-st.sidebar.title("Configuration")
+st.sidebar.title("\nConfiguration")
 
-# Add Download Code button at the top of sidebar
-with st.sidebar.expander("⬇️ Download CSV File"):
-    st.markdown("""
-    Download the complete source code of this project including:
-    - Main application file
-    - Utility modules
-    - Component files
-    - Configuration files
-    - Styling files
-    """)
-    st.download_button(
-        label="Download Code (ZIP)",
-        data='zip_buffer',
-        file_name="stock_ohlc_viewer_code.zip",
-        mime="application/zip",
-        help="Download all project source code files as a ZIP archive"
-    )
-
-# # Sample stock symbols
-# SAMPLE_SYMBOLS = [
-#     "^NSEI", "^NSEBANK", "NIFTY_FIN_SERVICE.NS", "NIFTY_MID_SELECT.NS", "^BSESN", "HDFC.NS", "SBI.NS"
-# ]
-
-
-# Sample stock symbols
-SAMPLE_SYMBOLS = [
-    "NIFTY50", "NIFTY BANK", "NIFTY FIN", "NIFTY MIDCAP", "SENSEX"
-]
-
-SYMBOLS = {
-    'NIFTY50': '^NSEI',
-    'NIFTY BANK': '^NSEBANK',
-    'NIFTY FIN': 'NIFTY_FIN_SERVICE.NS',
-    'NIFTY MIDCAP': 'NIFTY_MID_SELECT.NS',
-    'SENSEX': '^BSESN'
-}
-
-# Stock symbol selection
 selected_symbol = st.sidebar.selectbox(
     "Select Stock Symbol",
     options=SAMPLE_SYMBOLS,
@@ -75,17 +45,9 @@ selected_symbol = st.sidebar.selectbox(
 # Date range selection
 col1, col2 = st.sidebar.columns(2)
 with col1:
-    start_date = st.date_input(
-        "Start Date",
-        value=datetime.now() - timedelta(days=30),
-        max_value=datetime.now()
-    )
+    start_date = st.date_input("Start Date", value=datetime.now() - timedelta(days=30), max_value=datetime.now())
 with col2:
-    end_date = st.date_input(
-        "End Date",
-        value=datetime.now(),
-        max_value=datetime.now()
-    )
+    end_date = st.date_input("End Date", value=datetime.now(), max_value=datetime.now())
 
 # Fetch and display data
 try:
@@ -117,20 +79,46 @@ try:
     with col4:
         st.metric("Latest Low", f"{latest_data['Low']:.2f}")
 
-    # Display data table with styling
-    st.markdown("### Historical OHLC Data")
+    # 🟢 Candlestick Chart
+    st.markdown("### Candlestick Chart")
 
+    fig = go.Figure(
+        data=[
+            go.Candlestick(
+                x=df['Date'],
+                open=df['Open'],
+                high=df['High'],
+                low=df['Low'],
+                close=df['Close'],
+                increasing=dict(line=dict(color='green')),
+                decreasing=dict(line=dict(color='red')),
+            )
+        ]
+    )
+
+    fig.update_layout(
+        xaxis_title="Date",
+        yaxis_title="Price",
+        xaxis_rangeslider_visible=False,
+        template="plotly_white",
+        height=400,
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+
+    # 🟢 Styled Data Table
+    st.markdown("### Historical OHLC Data")
 
     def style_dataframe(df):
         def highlight_cols(s):
             if s.name == 'MKT Change':
-                return ['background-color: #d4edda; color: #155724;'] * len(s)  # Green for Close
+                return ['background-color: #d4edda; color: #155724;'] * len(s)  # Green
             elif s.name == 'Trend':
-                return ['background-color: #cce5ff; color: #004085;'] * len(s)  # Blue for Open
+                return ['background-color: #cce5ff; color: #004085;'] * len(s)  # Blue
             elif s.name == 'Open Close':
-                return ['background-color: #fff3cd; color: #856404;'] * len(s)  # Blue for Open
+                return ['background-color: #fff3cd; color: #856404;'] * len(s)  # Yellow
             else:
-                return [''] * len(s)  # Default (no highlight)
+                return [''] * len(s)
 
         def highlight_values(val):
             color = 'background-color: #d4edda; color: #155724;' if val > 0 else \
@@ -148,36 +136,11 @@ try:
             'Volume': '{:,.0f}'
         }).apply(highlight_cols, axis=0).set_table_styles([
             {'selector': 'thead th', 'props': [('font-weight', 'bold'), ('font-size', '14px')]}
-            # Bold and larger headers
-        ]).applymap(highlight_values, subset=['Open Change', 'MKT Change', 'Open Close'])
+        ]).map(highlight_values, subset=['Open Change', 'MKT Change', 'Open Close'])
 
+    st.dataframe(style_dataframe(df), use_container_width=True, height=400)
 
-    #    # Style the dataframe
-    #    def style_dataframe(df):
-    #        return df.style.format({
-    #            'Open': '{:.2f}',
-    #            'High': '{:.2f}',
-    #            'Low': '{:.2f}',
-    #            'Close': '{:.2f}',
-    #
-    #            'Open High': '{:.2f}',
-    #            'Open Low': '{:.2f}',
-    #            'Open Close': '{:.2f}',
-    #
-    #            'Volume': '{:,.0f}'
-    #        }).set_properties(**{
-    #            'background-color': '#ffffff',
-    #            'color': '#262730',
-    #            'border-color': '#e0e0e0'
-    #        })
-
-    st.dataframe(
-        style_dataframe(df),
-        use_container_width=True,
-        height=400
-    )
-
-    # Download button
+    # 🟢 Download Data Button
     csv = df.to_csv(index=False)
     st.download_button(
         label="Download Data",
