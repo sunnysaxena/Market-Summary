@@ -57,8 +57,9 @@ def get_stock_data(symbol: str, start_date, end_date) -> pd.DataFrame:
         }, inplace=True)
 
         # Select and rename columns
-        df = df[['Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Open Change', 'MKT Change', 'Trend', 'Open High',
-                 'Open Low', 'Open Close']]
+        df = df[['Date', 'Open', 'High', 'Low', 'Close', 'Volume',
+                 'Open High', 'Open Low', 'Open Close',
+                 'Open Change', 'MKT Change', 'Trend']]
 
         return df
     except Exception as e:

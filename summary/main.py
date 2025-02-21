@@ -132,6 +132,11 @@ try:
             else:
                 return [''] * len(s)  # Default (no highlight)
 
+        def highlight_values(val):
+            color = 'background-color: #d4edda; color: #155724;' if val > 0 else \
+                'background-color: #f8d7da; color: #721c24;' if val < 0 else ''
+            return color
+
         return df.style.format({
             'Open': '{:.2f}',
             'High': '{:.2f}',
@@ -144,7 +149,7 @@ try:
         }).apply(highlight_cols, axis=0).set_table_styles([
             {'selector': 'thead th', 'props': [('font-weight', 'bold'), ('font-size', '14px')]}
             # Bold and larger headers
-        ])
+        ]).applymap(highlight_values, subset=['Open Change', 'MKT Change', 'Open Close'])
 
 
     #    # Style the dataframe
