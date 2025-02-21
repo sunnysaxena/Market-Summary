@@ -26,6 +26,5 @@ This repository is intended to display the market summary on a daily basis. The 
     streamlit run main.py --server.address 0.0.0.0
     ```
 
-
 ![img_1.png](img_1.png)
 ![img_2.png](img_2.png)
