@@ -1,0 +1,12 @@
+[Unit]
+Description=Streamlit App
+After=network.target
+
+[Service]
+User=pysunny
+WorkingDirectory=/home/pysunny/PycharmProjects/marketSummary/summary
+ExecStart=/home/pysunny/anaconda3/envs/algoTrading/bin/python -m streamlit run main.py --server.address 0.0.0.0 --server.port 8501
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

@@ -1,11 +1,12 @@
 import time
-import yfinance as yf
+from datetime import datetime
+
 import pandas as pd
+import yfinance as yf
 from trade_utils import feature_extraction as fe
-from datetime import datetime, timedelta
 
 
-def check_expiry_day(df, date_column="Date"):
+def check_expiry_day(df, symbol, date_column="Date"):
     """
     Add a column 'Expiry' to check if the given date is a Thursday (Expiry Day).
 
@@ -17,7 +18,13 @@ def check_expiry_day(df, date_column="Date"):
         pd.DataFrame: DataFrame with an additional 'Expiry' column (True/False).
     """
     df[date_column] = pd.to_datetime(df[date_column])  # Ensure date format
-    df["Expiry"] = df[date_column].dt.day_name() == "Thursday"  # Check for Thursday
+    if symbol == '^NSEI':
+        df["Expiry"] = df[date_column].dt.day_name() == "Thursday"  # Check for Thursday
+    elif symbol == '^BSESN':
+        df["Expiry"] = df[date_column].dt.day_name() == "Tuesday"  # Check for Thursday
+    else:
+        df["Expiry"] = 'Monthly Expiry'
+
     return df
 
 
@@ -58,7 +65,7 @@ def get_stock_data(symbol: str, start_date, end_date) -> pd.DataFrame:
         df['Trend'] = df.apply(lambda row: fe.classify_trend_v2(row, df.shift(1).loc[row.name]), axis=1)
 
         # Apply the function
-        df = check_expiry_day(df)
+        df = check_expiry_day(df, symbol)
 
         df = fe.extract_feature(df)
 
@@ -77,8 +84,7 @@ def get_stock_data(symbol: str, start_date, end_date) -> pd.DataFrame:
 
         # Select and rename columns
         df = df[['Date', 'Open', 'High', 'Low', 'Close', 'Expiry', 'Volume',
-                 'Open High', 'Open Low', 'Open Close',
-                 'Open Change', 'MKT Change', 'Trend']]
+                 'Open Change', 'Open High', 'Open Low', 'Open Close', 'MKT Change', 'Trend']]
         return df
     except Exception as e:
         raise Exception(f"Error fetching data for {symbol}: {str(e)}")

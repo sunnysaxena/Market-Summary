@@ -1,11 +1,13 @@
 import pandas as pd
 import streamlit as st
+from utils import indicators as indi
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
 from components.loader import show_loader
 from utils.stock_data import get_stock_data, get_stock_info
 from utils.constants import SAMPLE_SYMBOLS, SYMBOLS
 
+df = None
 # Page configuration
 st.set_page_config(
     page_title="Stock OHLC Viewer",
@@ -66,6 +68,13 @@ try:
     # Fetch OHLC data
     df = get_stock_data(SYMBOLS[selected_symbol], start_date, end_date)
 
+    # df = indi.find_support_resistance(df)
+    # print(df.tail(10))
+    # df = indi.calculate_trendline(df)
+    # print(df.tail(10))
+    # df = indi.detect_breakouts(df)
+    # print(df.tail(10))
+
     # Display summary metrics
     col1, col2, col3, col4 = st.columns(4)
     latest_data = df.iloc[-1]
@@ -109,6 +118,7 @@ try:
     # 🟢 Styled Data Table
     st.markdown("### Historical OHLC Data")
 
+
     def style_dataframe(df):
         def highlight_cols(s):
             if s.name == 'MKT Change':
@@ -138,6 +148,7 @@ try:
             {'selector': 'thead th', 'props': [('font-weight', 'bold'), ('font-size', '14px')]}
         ]).map(highlight_values, subset=['Open Change', 'MKT Change', 'Open Close'])
 
+
     st.dataframe(style_dataframe(df), use_container_width=True, height=400)
 
     # 🟢 Download Data Button
@@ -151,6 +162,28 @@ try:
 
 except Exception as e:
     st.error(f"Error: {str(e)}")
+
+# Sidebar components
+# initialise data of lists.
+data = {'Name': ['Tom', 'nick', 'krish', 'jack'], 'Age': [20, 21, 19, 18]}
+
+# Create DataFrame
+tf = pd.DataFrame(data)
+# Sidebar components
+
+if st.sidebar.button("📊 Show Support & Resistance Levels"):
+    with st.expander("Support & Resistance Levels"):
+        st.dataframe(tf[['Name', 'Age']].dropna(), use_container_width=True)
+
+
+if st.sidebar.button("📈 Show Trendline Data"):
+    with st.expander("Trendline Data"):
+        st.dataframe(tf[['Name', 'Age']].dropna(), use_container_width=True)
+
+if st.sidebar.button("🚨 Show Breakout Detection"):
+    with st.expander("Breakout Detection"):
+        st.dataframe(tf[['Name', 'Age']].dropna(), use_container_width=True)
+
 
 # Footer
 st.markdown("""
