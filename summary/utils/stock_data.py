@@ -66,8 +66,11 @@ def get_stock_data(symbol: str, start_date, end_date) -> pd.DataFrame:
 
         # Apply the function
         df = check_expiry_day(df, symbol)
+        df = check_expiry_day(df, symbol)
 
         df = fe.extract_feature(df)
+
+        print(df.columns)
 
         # Renaming columns
         df.rename(columns={
@@ -77,6 +80,7 @@ def get_stock_data(symbol: str, start_date, end_date) -> pd.DataFrame:
             'close': 'Close',
             'open_change': 'Open Change',
             'mkt_change': 'MKT Change',
+            'mkt_change_%': 'Change %',
             'open_high': 'Open High',
             'open_low': 'Open Low',
             'open_close': 'Open Close',
@@ -84,7 +88,7 @@ def get_stock_data(symbol: str, start_date, end_date) -> pd.DataFrame:
 
         # Select and rename columns
         df = df[['Date', 'Open', 'High', 'Low', 'Close', 'Expiry', 'Volume',
-                 'Open Change', 'Open High', 'Open Low', 'Open Close', 'MKT Change', 'Trend']]
+                 'Open Change', 'Open High', 'Open Low', 'Open Close', 'MKT Change', 'Change %','Trend']]
         return df
     except Exception as e:
         raise Exception(f"Error fetching data for {symbol}: {str(e)}")
